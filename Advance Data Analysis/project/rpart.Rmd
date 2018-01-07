@@ -1,0 +1,33 @@
+---
+title: "rpart"
+author: "Qiuying Li UNI ql2280"
+date: "11/6/2017"
+output: word_document
+---
+
+```{r}
+# R-PART Regression Trees
+library(MASS)
+library(plotmo)
+library("rpart.plot", lib.loc="/Library/Frameworks/R.framework/Versions/3.3/Resources/library")
+library(rpart)
+library(tree)
+train_cat <- read.csv("~/Desktop/train_full.csv")
+train_cat = as.data.frame(train_cat)
+cat = train_cat
+control = rpart.control(minsplit=5, minbucket= 2, cp=0.002)
+c_fit = rpart(log(shares)~., data = cat,method = "anova",control = rpart.control(minsplit=10, minbucket= 4, cp=0.002))
+plot(c_fit)
+printcp(c_fit)
+plotcp(c_fit)
+summary(c_fit)
+prp(c_fit, box.palette="RdYlGn",fallen.leaves = FALSE,tweak=1.5)
+prp(c_fit, box.palette=c("pink", "palegreen3"),fallen.leaves = FALSE,tweak=1.5)
+rpart.plot(c_fit,box.palette=c("pink", "palegreen3"),fallen.leaves = FALSE,tweak=1.2)
+rpart.plot(c_fit, box.palette="RdYlGn",fallen.leaves = FALSE,tweak=1.2)
+#predict
+plot(resid(c_fit))
+plot(predict(c_fit), jitter(resid(c_fit)))
+```
+
+

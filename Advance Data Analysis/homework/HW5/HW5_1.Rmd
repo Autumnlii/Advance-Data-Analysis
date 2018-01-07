@@ -1,0 +1,102 @@
+---
+title: "HW5"
+author: "Qiuying Li UNI ql2280"
+date: "10/12/2017"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+1) Determine whether there is a significant difference in the mean weights of the six diet groups, using a one-way ANOVA
+```{r}
+#a) Without adjusting for Week 3 weight
+library(devtools)
+install_github("pda", "byandell")
+library(pda)
+library("lsmeans")
+diet <- Diet
+diet$trt <- factor(diet$trt)
+diet$block <- factor(diet$block)
+anov1 <- aov(dmi ~ trt, diet)
+summary(anov1)
+```
+
+```{r}
+#Adjusting for Week 3 weight.
+library(lsmeans)
+#library(car)
+lm.adjust<-lm(dmi~covar+trt, data = diet, na.action=na.omit)
+anova(lm.adjust)
+summary(aov(formula = dmi ~ covar + trt, data = diet))
+lm.rg<-ref.grid(lm.adjust)
+ls.adjust<-lsmeans(lm.rg,"trt")
+ls.adjust
+```
+```{r}
+#Use a test for parallelism to evaluate the appropriateness of performing inference based the adjusted means.
+dmi = diet$dmi
+covar = diet$covar
+trt = diet$trt
+summary(aov(dmi ~ covar*trt))
+#When Ho is rejected, inference about the marginal mean differences must be performed for each X = x
+```
+
+
+```{r}
+anov1 <- aov(dmi ~ trt, diet)
+anov2 <- aov(dmi ~ trt + covar, diet)
+par(mfrow = c(1,2))
+hist(resid(anov1))
+qqnorm(resid(anov1))
+shapiro.test(resid(anov1))
+par(mfrow = c(1,2))
+hist(resid(anov2))
+qqnorm(resid(anov2))
+shapiro.test(resid(anov2))
+kruskal.test(dmi~trt,data=diet)
+bartlett.test(x= diet$dmi, g = as.factor(diet$trt))
+library(car)
+leveneTest(y=diet$dmi,group=as.factor(diet$trt))
+```
+```{r}
+library(pwr)
+help(pwr)
+p.func<-function(mean.diff,sd,size=seq(5,10,1)){
+  power = vector()
+  for(k in 1:length(size)){
+    p = pwr.t.test(n= size[k],d=mean.diff/sd,type = "two.sample",alternative = "greater") 
+    power[k] = p$power
+  }
+  name = sprintf("sd = %g, mean.diff = %g",  mean.diff, sd)
+  plot(size, power, type = "l", xlab = "Sample Size (n)", main= name, ylab = "Power",ylim = c(0,1))
+  axis(side=2, at=seq(0, 1, by=0.1))
+}
+# Plot power vs sample
+par(mfrow = c(2,3))
+mean.diff=seq(2,10,4)
+sd=c(5,10)
+for (j in 1:length(mean.diff)){
+  for (i in 1:length(sd)){
+    p.func(mean.diff[j],sd[i])
+  }
+}
+```
+
+```{r}
+par(mfrow = c(3,3))
+propes.func<-function(p,size=seq(5,10,1)){
+  h = vector()
+  for(k in 1:length(size)){
+    p.es = pwr.t.test(n= size[k],d=NULL,power = p, type = "two.sample") 
+    h[k] = p.es$d
+  }
+  name = sprintf("power = %g", p)
+  plot(size, h, type = "l", xlab = "Sample Size (n)", ylab = "effect size",main = name,)
+  
+}
+
+for(i in 1:10){
+  propes.func(p= i/10)
+}
+
+```

@@ -1,0 +1,103 @@
+---
+title: "HW4"
+author: "Qiuying Li UNI ql2280"
+date: "10/3/2017"
+output: word_document
+---
+#Investigate whether there is any multicollinearity, and suggest remedial measures if appropriate.
+```{r}
+library("MASS", lib.loc="/Library/Frameworks/R.framework/Versions/3.3/Resources/library")
+data = Boston
+multi_lm = lm(medv~crim+zn+indus+nox+rm+age+tax,data)
+summary(multi_lm)
+anov = anova(multi_lm)
+ss = anov$`Sum Sq`
+VIF = 1/(1-ss[-length(ss)]/sum(ss))
+anov$VIF = c(VIF," ")
+anov
+VIF_bar = mean(VIF);VIF_bar
+names<-c("crim","zn","indus","nox","rm","age","tax")
+explanatory<-as.matrix(Boston[names])
+dependent<-as.matrix(Boston["medv"])
+corr_mat<-cor(explanatory)
+eigen_values<-eigen(corr_mat)$values
+con_number<-max(eigen_values)/min(eigen_values);con_number
+```
+```{r}
+library(pls)
+data1 = as.data.frame(Boston)
+lm = lm(medv~crim+zn+indus+nox+rm+age+tax,data=Boston)
+par(mfrow = c(2,2))
+plot(lm)
+predict(lm)
+pcr_model <- pcr(medv~crim+zn+indus+nox+rm+age+tax,data=Boston, scale = TRUE, validation = "CV")
+summary(pcr_model)
+pcr_pred <- predict(pcr_model, Boston, ncomp = 3);pcr_pred
+validationplot(pcr_model)
+validationplot(pcr_model, val.type = "R2")
+coefplot(pcr_model)
+predplot(pcr_model)
+predplot(lm)
+
+#predplot(pcr_model,main = "predictoin values of two models")
+par(mfrow = c(1,1))
+predplot(pcr_model,main = "prediced medv values")
+points(predict(lm), col = "red")
+legend('bottomright',c("PCA", "Simple Linear"), text.col = c("black", "red"),bty='n', cex=.75)
+
+```
+
+```{r}
+#ridge regression
+
+ridge_reg<-lm.ridge(medv~crim+zn+indus+nox+rm+age+tax,data=Boston)
+ridge_coef<-ridge_reg$coef;ridge_coef
+```
+
+```{r}
+#Lasso regression
+library(glmnet)
+names<-c("crim","zn","indus","nox","rm","age","tax")
+explanatory<-as.matrix(Boston[names])
+dependent<-as.matrix(Boston["medv"])
+lasso_reg<-glmnet(explanatory,dependent)
+summary(lasso_reg)
+cv_reg<-cv.glmnet(explanatory,dependent)
+plot(cv_reg)
+#choose model coefficient
+lambda<-cv_reg$lambda.min
+coeff<-coef(cv_reg,s="lambda.min")
+predict_lasso<-predict(cv_reg,newx = explanatory,s="lambda.min")
+MSE_lasso<-mean((dependent-predict_lasso)^2);MSE_lasso
+#stepwise regression
+glm_model1<-glm(medv~1,data=Boston)
+glm_model2<-glm(medv~crim+zn+indus+nox+rm+age+tax,data=Boston)
+
+backward<-stepAIC(glm_model2,direction = "backward",scope=list(
+  upper = glm_model2,lower = glm_model1),trace = F)
+summary(backward)
+forward<-stepAIC(glm_model1,direction = "forward",scope=list(
+  upper = glm_model2,lower = glm_model1),trace = F)
+summary(forward)
+#calculate MSE
+predict_back<-predict(backward,newx = explanatory)
+predict_for<-predict(forward,newx = explanatory)
+MSE_back<-mean((dependent-predict_back)^2);MSE_back
+MSE_for<-mean((dependent-predict_for)^2);MSE_for
+
+#comparison plot
+par(mfrow = c(1,3))
+plot(predict_lasso)
+plot(predict_back)
+plot(predict_for)
+
+```
+
+
+```{r}
+
+```
+
+```{r}
+
+```

@@ -1,0 +1,107 @@
+---
+title: "HW3"
+author: "Qiuying Li UNI ql2280"
+date: "9/28/2017"
+output: word_document
+---
+1. Consider the Boston dataset, in R library MASS, on Housing Values in Suburbs of Boston
+Fit a multiple linear regression model to predict medv (median value of owner-occupied homes in $1000s) using the following set of predictors:
+
+```{r}
+library("MASS", lib.loc="/Library/Frameworks/R.framework/Versions/3.3/Resources/library")
+data = Boston
+lm = lm(medv ~ crim+zn+indus+nox+rm+age+tax, data)
+summary(lm)
+par(mfrow=c(2,2))
+plot(lm)
+```
+2. State and assess the validity of the underlying assumptions, and suggest remedial measures in case of violations of any of the underlying assumptions
+#Linearity/functional form
+```{r}
+#(a)Check matrix scatter plot
+pairs(medv ~crim+zn+indus+nox+rm+age+tax, data)
+#(b)Check linearity of each predictor
+lm1 = lm(medv~crim,data)
+lm2 = lm(medv~zn,data)
+lm3 = lm(medv~indus,data)
+lm4 = lm(medv~nox,data)
+lm5 = lm(medv~rm,data)
+lm6 = lm(medv~age,data)
+lm7 = lm(medv~tax,data)
+par(mfrow = c(2,3))
+plot(data$crim,data$medv, main = "medv ~ crim", xlab = "crim", ylab = "medv")
+abline(lm1, col = "red")
+plot(data$zn,data$medv, main = "medv ~ zn", xlab = "zn", ylab = "medv")
+abline(lm2, col = "red")
+plot(data$indus,data$medv, main = "medv ~ indus", xlab = "indus", ylab = "medv")
+abline(lm3, col = "red")
+plot(data$nox,data$medv, main = "medv ~ nox", xlab = "nox", ylab = "medv")
+abline(lm4, col = "red")
+plot(data$rm,data$medv, main = "medv ~ rm", xlab = "rm", ylab = "medv")
+abline(lm5, col = "red")
+plot(data$age,data$medv, main = "medv ~ age", xlab = "age", ylab = "medv")
+abline(lm6, col = "red")
+plot(data$tax,data$medv, main = "medv ~ tax", xlab = "tax", ylab = "medv")
+abline(lm7, col = "red")
+#(c)Check fitted value V.S. residuals
+plot(lm$fitted.values,lm$residuals)
+#(d) Check the R^squared
+summary(lm)
+
+```
+Check Normality
+```{r}
+#（a) check histogram
+hist(lm$residuals, xlab = "residuals", main = "Histogram of residuals")
+abline(density(lm$residuals),col = "red")
+#(b) check QQ-PLOT
+qqnorm(lm$residuals, main = "Normal Q-Q Plot",
+       xlab = "Theoretical Quantiles", ylab = "Sample Quantiles")
+qqline(lm$residuals)
+# DO shapiro test
+shapiro.test(lm$residuals)
+```
+#Homoscedasticity
+```{r}
+#(a) Check the residuals scatterplot of the multi-linear models
+plot(lm$residuals)
+abline(0,0, col = "red")
+#(b) Check the residuals of each predictor
+par(mfrow = c(2,3))
+plot(lm1$residuals)
+plot(lm2$residuals)
+plot(lm3$residuals)
+plot(lm4$residuals)
+plot(lm5$residuals)
+plot(lm6$residuals)
+plot(lm7$residuals)
+```
+#Uncorrelated error
+```{r}
+library("car", lib.loc="/Library/Frameworks/R.framework/Versions/3.3/Resources/library")
+durbinWatsonTest(lm)
+```
+# remedial measures: log data transformation
+```{r}
+lm11 = lm(log(medv)~crim,data)
+lm22 = lm(log(medv)~zn,data)
+lm33 = lm(log(medv)~indus,data)
+lm44 = lm(log(medv)~nox,data)
+lm55 = lm(log(medv)~rm,data)
+lm66 = lm(log(medv)~age,data)
+lm77 = lm(log(medv)~tax,data)
+par(mfrow = c(2,3))
+plot(lm11$residuals)
+plot(lm22$residuals)
+plot(lm33$residuals)
+plot(lm44$residuals)
+plot(lm55$residuals)
+plot(lm66$residuals)
+plot(lm77$residuals)
+```
+3. use least median square method do linear regression
+```{r}
+lm_median<-lmsreg(medv ~ crim+zn+indus+nox+rm+age+tax, data=Boston)
+lm_median
+
+```

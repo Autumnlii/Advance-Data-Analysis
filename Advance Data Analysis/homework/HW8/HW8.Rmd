@@ -1,0 +1,30 @@
+---
+title: "HW7"
+author: "Qiuying Li UNI ql2280"
+date: "11/17/2017"
+output: word_document
+---
+1. 
+```{r}
+library(survival) 
+data.cancer<-cancer 
+colnames(data.cancer)
+data.cancer$AgeGroup<-ifelse(data.cancer$age < 65, "Young", "Old")                                      
+sfit <- survfit(Surv(time, status)~AgeGroup, data=data.cancer,type="kaplan-meier", conf.type = "log")
+summary(sfit, times = seq(0,1000,100))
+library(survminer)
+ggsurvplot(sfit)
+
+sfit.fh <- survfit(Surv(time, status)~AgeGroup, data=data.cancer,type="fleming-harrington")
+summary(sfit.fh,times = seq(0,1000,100))
+ggsurvplot(sfit.fh)
+```
+2.For each case in 1, estimate the median survival time, using the estimated survival curves
+```{r}
+print(sfit,print.rmean = T)
+print(sfit.fh,print.rmean = T)
+```
+3.Using a log-rank test, compare the survival distributions for Male and Female
+```{r}
+survdiff(Surv(time, status)~sex,data = data.cancer,rho = 0)
+```

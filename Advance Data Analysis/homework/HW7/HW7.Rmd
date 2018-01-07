@@ -1,0 +1,73 @@
+---
+title: "HW7"
+author: "Qiuying Li UNI ql2280"
+date: "11/9/2017"
+output: word_document
+---
+#Problem 2 (a)
+```{r}
+rm( list=ls())
+library (Sleuth2)
+data(ex2224)
+Nuclear = ex2224
+levels (Nuclear$System) =c("containment","nuclear","power conversion","safety","process auxiliary")
+levels (Nuclear$Operator) = c("air","solenoid","motor-driven","manual")
+levels (Nuclear$Valve) = c("ball","butterfly","diaphragm","gate","globe","directional control")
+levels (Nuclear$Size) = c("<2","2-10","10-30")
+levels (Nuclear$Mode) = c("closed","open")
+for (names in names(Nuclear)) { 
+  if ( class (Nuclear[[names]])!="numeric") { 
+    Nuclear[[names]] = as.factor(as.numeric(Nuclear[[names]]))
+  }
+}
+#loglinear poisson regression
+glmpoisson = glm(Failures~System+Operator+Valve+Size+Mode,offset=log(Time),data=Nuclear,family="poisson")
+```
+So the model is:
+
+log(F ailures) = −3.77 + 0.92*System2 + 1.02*System3 + 1.22*System4 + 0.33*System5
++ 0.70*Operator2 − 1.19*Operator3 − 2.47*Operator4
++ 0.19*Valve2 + 0.61*Valve3 + 2.96*Valve4 + 1.79*Valve5 + 1.01*Valve6
+− 0.01Size2 + 1.1Size3
+− 0.21Mode2
+
+
+
+#(b). Interpret the estimated parameters.
+```{r}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+#c) Assess the goodness of fit of the model
+```{r}
+library (glmnet)
+with(glmpoisson, cbind(res.deviance = deviance, df = df.residual,p = pchisq(deviance, df.residual, lower.tail=FALSE)))
+anova(glmpoisson,test="Chisq")
+```
+
+#Problem 3
+```{r}
+#plot(glmpoisson_l1_cv)
+###￥coeff = coef(model,lambda);coeff
+```
+

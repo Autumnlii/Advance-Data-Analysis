@@ -1,0 +1,36 @@
+---
+title: "HW9"
+author: "Qiuying Li UNI ql2280"
+date: "11/30/2017"
+output: word_document
+---
+
+```{r }
+library(survival) 
+data.cancer<-cancer 
+colnames(data.cancer)
+fit <- survfit(Surv(time, status)~sex, data=data.cancer,type="kaplan-meier") 
+summary(fit)
+library(survminer)
+ggsurvplot(fit)
+fit
+```
+#2.Using a Cox proportional hazards model, estimate the hazard rate for Male relative to Female 
+```{r}
+cox<-coxph(Surv(time,status)~sex,data=data.cancer)
+summary(cox)
+hazard.rate = exp( -0.5310)
+hazard.rate
+```
+#3. Assess the validity of the proportional hazards assumption in (1)
+```{r}
+test.ph <- cox.zph(cox)
+test.ph
+```
+#4.
+```{r}
+cox.2<-coxph(Surv(time,status)~sex+age,data=data.cancer)
+summary(cox.2)
+hazard.rate2 = exp(-0.513219 )
+hazard.rate2
+```
